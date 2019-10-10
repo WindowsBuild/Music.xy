@@ -1,0 +1,26 @@
+{
+  "name": "discordbotjs",
+  "version": "1.0.0",
+  "description": "A discord Bot",
+  "main": "Core-Bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Discord",
+    "Bot"
+  ],
+  "author": "Windows#0001",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^11.5.1",
+    "ffmpeg": "0.0.4",
+    "giphy-js-sdk-core": "^1.0.6",
+    "opusscript": "0.0.7",
+    "ytdl-core": "^1.0.0",
+    "ytdl-core-discord": "^1.0.3"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.1"
+  }
+}
