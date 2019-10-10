@@ -49,9 +49,10 @@ client.on('message', message =>{
 
 client.on('message', message => {
     if(message.content.startsWith(`${prefix}volume`)){
-        const slpit = message.content.split(" ");
-        var args = message.getInfo(args[1]);
-        args = Volume
+        const args = message.content.slice(prefix.length).split(/ +/);
+        //the diffrence between VOL and Volume is that VOL has been passed in by the user
+        var Volume = parseInt(args[1]);
+        console.log(Volume);
         message.channel.send(`The volume has been set to ${Volume}`);
 
     }
@@ -118,7 +119,8 @@ function playSong(guild, song) {
         .on('error', error => {
             console.log(error);
         })
-    dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
+            dispatcher.setVolumeLogarithmic(serverQueue.volume / 2);
+        
 }
 
 
