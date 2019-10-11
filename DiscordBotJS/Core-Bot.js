@@ -39,8 +39,15 @@ client.on('message', message =>{
             return message.channel.send("Senpai! I need permision to do that!")
         }else{
             vc.join();
+            message.channel.send("Hai How's it going want to listen to music? type !play");
         }
         
+    }
+})
+
+client.on('message', message =>{
+    if(message.content.startsWith(`${prefix}about`)){
+        message.channel.send("About: V1.5.0, Made By Windows#0001");
     }
 })
 
@@ -91,7 +98,7 @@ async function play(message, serverQueue) {
         FindVideoURL(args, message, serverQueue);
     }
 }
-
+//serches youtube for a query and then plays it
 async function FindVideoURL(args, message , serverQueue){
 
     const voiceChannel = message.member.voiceChannel;
@@ -148,6 +155,7 @@ function playSong(guild, song) {
 
     const dispatcher = serverQueue.connection.playStream(ytdl(song.url))
         .on('end', () => {
+            
             serverQueue.songs.shift();
             playSong(guild, serverQueue.songs[0]);
         })
