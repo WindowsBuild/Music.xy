@@ -1,14 +1,33 @@
+//core bot vars
 const Discord = require('discord.js');
 const{token, prefix, giphyToken, youtubeAPI} = require('./config.json');
 const client = new Discord.Client();
 const{CommandKick, ResponceKick, ResponceError, ResponceKick2} = require('./Commands.json');
-const js = require("fs");
+const fs = require("fs");
+//everything for youtube
 const ytdl = require('ytdl-core');
 const youtube = require('simple-youtube-api');
 const Youtube = new youtube(youtubeAPI);
+//giphy api
 var GphApiClient = require('giphy-js-sdk-core')
 giphy = GphApiClient(`${giphyToken}`)
 client.commands = new Discord.Collection();
+//command handelr
+fs.readdir(`${__dirname}/Commands/`, (err, files) => {
+    if(err) console.log(err);
+
+    let jsfile = files.filter(f => f.split(".").pop() === "js");
+    if(jsfile.length <= 0){
+        console.log("We can't fetch the command");
+        return;
+    }
+
+    jsfile.forEach((f, i) => {
+        let props = require(`./Commands/${f}`);
+        console.log(`found file ${f}`);   
+        client.commands.set(props.help.name, props);
+    })
+})
 
 var queue = new Map();
 var Volume = 2;
@@ -16,6 +35,15 @@ var Volume = 2;
 //show when connected to the discord cloud APT
 client.once('ready', () => {
     console.log("Connected To The Discord API");
+})
+
+client.on('message', message =>{
+    let messageAray = message.content.split(" ");
+    let cmd = messageAray[0];
+    let args = messageAray.slice(1);
+
+    let commandFile = client.commands.get(cmd.slice(prefix.length));
+    if(commandFile) commandFile.run(client, message, args);
 })
 
 client.on('message', message => {
@@ -52,14 +80,6 @@ client.on('message', message =>{
 })
 
 client.on('message', message =>{
-    const serverQueue = queue.get(message.guild.id);
-    if(message.content.startsWith(`${prefix}play`)){
-        //this is the !play
-        play(message,serverQueue);
-    }
-})
-
-client.on('message', message =>{
     if(message.content.startsWith(`${prefix}q`)){
             queuemessage();
     }
@@ -75,96 +95,6 @@ client.on('message', message => {
 
     }
 })
-
-
-//Searches youtube for a URL or Query
-async function play(message, serverQueue) {
-    const args = message.content.split(" ");
- 
-    const voiceChannel = message.member.voiceChannel;
-    if(!voiceChannel) return message.reply("Hay, So you need to be in the Voice Channel to do that :grimacing:");
-    const permission = voiceChannel.permissionsFor(message.client.user);
-    if(!permission.has('CONNECT') || !permission.has("SPEAK")) {
-        return message.channel.send("Senpai! I need permision to do that!")
-    }
-    if(args[1].match(/^(http(s)?:\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+/)){
-        const songInfo = await ytdl.getInfo(args[1]);
-        const songURL = {
-            title: songInfo.title,
-            url: songInfo.video_url,
-        };
-    }else{
-        console.log("Passing The Link Bearriar");
-        FindVideoURL(args, message, serverQueue);
-    }
-}
-//serches youtube for a query and then plays it
-async function FindVideoURL(args, message , serverQueue){
-
-    const voiceChannel = message.member.voiceChannel;
-    if(!voiceChannel) return message.reply("Hay, So you need to be in the Voice Channel to do that :grimacing:");
-    const permission = voiceChannel.permissionsFor(message.client.user);
-    if(!permission.has('CONNECT') || !permission.has("SPEAK")) {
-        return message.channel.send("Senpai! I need permision to do that!")
-    } 
-    console.log(args[1]);
-    const videos = await Youtube.searchVideos(args[1], 5);
-    const urlVidoe = await Youtube.getVideoByID(videos[1].id);
-    const URL =  `https://www.youtube.com/watch?v=${urlVidoe.raw.id}`;
-
-        const song = {
-            title: urlVidoe.title,
-            url: URL,
-        };
-    console.log(URL);
-    if(!serverQueue) {
-        const queueConstruct = {
-            textChannel: message.channel,
-            voiceChannel: voiceChannel,
-            connection: null,
-            songs: [],
-            volume: Volume,
-            playing: true,
-        };
-        queue.set(message.guild.id, queueConstruct);
-
-        queueConstruct.songs.push(song);
-
-        try{
-            var connection = await voiceChannel.join();
-            queueConstruct.connection = connection;
-            playSong(message.guild, queueConstruct.songs[0]);
-        }catch(err) {
-            console.log(err);
-            queue.delete(message.guild.id)
-            return message.channel.send("There was an error in the source code " + err);
-        }
-    } else {
-        serverQueue.songs.push(song);
-        return message.channel.send(`${song.title} Has Been Added To The queue!`);
-    }
-}
-
-function playSong(guild, song) {
-    const serverQueue = queue.get(guild.id);
-    if(!song) {
-        serverQueue.voiceChannel.leave();
-        queue.delete(guild.id);
-        return;
-    }
-
-    const dispatcher = serverQueue.connection.playStream(ytdl(song.url))
-        .on('end', () => {
-            
-            serverQueue.songs.shift();
-            playSong(guild, serverQueue.songs[0]);
-        })
-        .on('error', error => {
-            console.log(error);
-        })
-            dispatcher.setVolumeLogarithmic(serverQueue.volume / 2);
-        
-}
 
 function queuemessage(guild, song, serverQueue){
     if(!song.title == ""){

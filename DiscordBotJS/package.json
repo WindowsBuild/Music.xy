@@ -14,6 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "discord.js": "^11.5.1",
+    "djs-commands": "^1.2.2",
     "ffmpeg": "0.0.4",
     "giphy-js-sdk-core": "^1.0.6",
     "opusscript": "0.0.7",
