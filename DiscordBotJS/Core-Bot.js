@@ -28,13 +28,13 @@ fs.readdir(`${__dirname}/Commands/`, (err, files) => {
         client.commands.set(props.help.name, props);
     })
 })
-
+//queue map
 var queue = new Map();
 var Volume = 2;
 
 //show when connected to the discord cloud APT
 client.once('ready', () => {
-    console.log("Connected To The Discord API");
+    console.log(`Connected To The Discord API`);
 })
 
 client.on('message', message =>{
@@ -56,20 +56,6 @@ client.on('message', message => {
                 message.channel.send(`${ResponceKick}` + member.displayName + `${ResponceKick2}`);
             })
         } 
-    }
-})
-client.on('message', message =>{
-    if(message.content.startsWith(`${prefix}connect`)){
-        const vc = message.member.voiceChannel;
-        if(!vc) return MessageChannel.reply("So you cant summon me till your in the voice channel");
-        const permission = vc.permissionsFor(message.client.user);
-        if(!permission.has('CONNECT') || !permission.has("SPEAK")) {
-            return message.channel.send("Senpai! I need permision to do that!")
-        }else{
-            vc.join();
-            message.channel.send("Hai How's it going want to listen to music? type !play");
-        }
-        
     }
 })
 
