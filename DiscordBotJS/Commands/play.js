@@ -93,6 +93,7 @@ module.exports.run = async(client,message,args) =>{
                 url: URL,
                 thumbnail: Thumnail,
                 Channel: channel,
+                User: message.member.user.tag,
             };
         console.log(URL);
         if(!serverQueue) {
@@ -113,7 +114,7 @@ module.exports.run = async(client,message,args) =>{
                     .setAuthor(`${song.channel}`)
                     .setTitle('Song Playing: ')
                     .setThumbnail(`${song.thumbnail}`)
-                    .setDescription(`${song.title}`)
+                    .setDescription(`${song.title} Requested By: @${song.User}`)
                 message.channel.send(playingEmbed);
                 var connection = await voiceChannel.join();
                 queueConstruct.connection = connection;
@@ -131,7 +132,7 @@ module.exports.run = async(client,message,args) =>{
     
     function playSong(guild, song, message) {
         const serverQueue = queue.get(guild.id);
-        const dispatcher = serverQueue.connection.playStream(ytdl(song.url))
+        const dispatcher = serverQueue.connection.playStream(ytdl(song.url, {highWaterMark: 1<<25, filter: 'audioonly', maxReconnects: 10}))
             .on('end', () => {
                 serverQueue.songs.shift();
                 playSong(guild, serverQueue.songs[0]);
